@@ -104,7 +104,7 @@ export const Typography: React.FC<TypographyProps> = ({
 
   const Component = styled(Tag)`
     margin: 0;
-    color: ${theme.colors.primary};
+    color: ${theme.colors.text};
     font-size: ${size};
     font-weight: ${bold ? '700' : '400'};
     font-style: ${italic ? 'italic' : 'normal'};
