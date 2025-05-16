@@ -1,5 +1,6 @@
 // src/index.ts
 export * from './components/Box';
+export * from './components/Stack';
 export * from './components/Surface';
 export * from './components/Button';
 export * from './components/Typography';
