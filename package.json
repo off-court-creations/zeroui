@@ -1,6 +1,6 @@
 {
     "name": "@archway/zeroui",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "private": false,
     "main": "dist/index.js",
     "module": "dist/index.mjs",
@@ -25,7 +25,13 @@
         "typescript": "^5.8.3"
     },
     "description": "zeroui is a CSS-in-JS and UI Component Library that conforms to zero design",
-    "keywords": ["react", "react-component", "ui", "archway", "zeroui"],
+    "keywords": [
+        "react",
+        "react-component",
+        "ui",
+        "archway",
+        "zeroui"
+    ],
     "author": "0xbenc",
     "license": "MIT"
 }
