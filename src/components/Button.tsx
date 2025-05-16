@@ -65,14 +65,19 @@ export const Button: React.FC<ButtonProps> = ({
       ? `calc(${padV} - 1px) calc(${padH} - 1px)`
       : `${padV} ${padH}`;
 
+  const rippleColor =
+    variant === 'main' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.1)';
+
   const Component = styled('button')`
     display: inline-flex;
     align-items: center;
     justify-content: center;
 
+    position: relative;
+    overflow: hidden;
+
     height: ${height};
     min-width: ${height};
-
     padding: ${padRule};
     box-sizing: border-box;
 
@@ -85,7 +90,7 @@ export const Button: React.FC<ButtonProps> = ({
     font-weight: 600;
     cursor: pointer;
 
-    transition: background 0.2s ease, color 0.2s ease, filter 0.2s ease;
+    transition: background 0.2s ease, color 0.2s ease, filter 0.2s ease, transform 0.1s ease;
 
     &:hover:not(:disabled) {
       ${variant === 'main'
@@ -96,9 +101,30 @@ export const Button: React.FC<ButtonProps> = ({
         `}
     }
 
+    &:active:not(:disabled) {
+      transform: scale(0.96);
+    }
+
     &:disabled {
       opacity: 0.5;
       cursor: default;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: ${rippleColor};
+      border-radius: inherit;
+      opacity: 0;
+      transform: scale(0.95);
+      pointer-events: none;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    &:active::after {
+      opacity: 1;
+      transform: scale(1);
     }
   `;
 
