@@ -36,9 +36,6 @@ export interface FormControlProps<T extends Record<string, any>>
   ) => void;
 }
 
-/**
- * **FormControl** – ultra-light, typed form wrapper.
- */
 export function FormControl<T extends Record<string, any>>({
   useStore,
   onSubmitValues,

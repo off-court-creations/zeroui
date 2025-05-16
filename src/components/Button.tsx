@@ -1,4 +1,3 @@
-// src/components/Button.tsx
 import React from 'react';
 import { styled } from '../css/createStyled';
 import { useTheme } from '../system/themeStore';
@@ -6,26 +5,12 @@ import type { Theme } from '../system/themeStore';
 import { preset } from '../css/stylePresets';
 import type { Presettable } from '../types';
 
-/**
- * Visual theme variants a Button can render.
- * - **`main`** – Solid background, primary call-to-action.
- * - **`alt`**  – Transparent background, 1 px outline, secondary action.
- */
-export type ButtonVariant = 'main' | 'alt';
+/*───────────────────────────────────────────────────────────────────────────*/
+/* Public types                                                              */
 
-/**
- * Pre-defined sizing presets for the Button.
- * - **`sm`** – 32 px tall, 0.75 rem font.
- * - **`md`** – 40 px tall, 0.875 rem font (default).
- * - **`lg`** – 48 px tall, 1 rem font.
- */
-export type ButtonSize = 'sm' | 'md' | 'lg';
+export type ButtonVariant = 'main' | 'alt';   // Solid vs. outlined
+export type ButtonSize    = 'sm' | 'md' | 'lg';
 
-/**
- * **ButtonProps**
- *
- * Extends every intrinsic `<button>` prop and adds ZeroUI-specific controls.
- */
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     Presettable {
@@ -35,48 +20,33 @@ export interface ButtonProps
   size?: ButtonSize;
 }
 
-/**
- * Internal mapping of `size` → padding, font-size, and exterior height.
- * @param theme The current design-system theme object.
- */
+/*───────────────────────────────────────────────────────────────────────────*/
+/* Implementation helpers                                                   */
+
 const createSizeMap = (theme: Theme) => ({
   sm: {
-    padV: theme.spacing.sm, // 4 px
-    padH: theme.spacing.md, // 8 px
+    padV: theme.spacing.sm,
+    padH: theme.spacing.md,
     font: '0.75rem',
     height: '32px',
   },
   md: {
-    padV: theme.spacing.sm, // 4 px
-    padH: theme.spacing.lg, // 16 px
+    padV: theme.spacing.sm,
+    padH: theme.spacing.lg,
     font: '0.875rem',
     height: '40px',
   },
   lg: {
-    padV: theme.spacing.md, // 8 px
-    padH: theme.spacing.lg, // 16 px
+    padV: theme.spacing.md,
+    padH: theme.spacing.lg,
     font: '1rem',
     height: '48px',
   },
 } as const);
 
-/**
- * **Button** – ZeroUI’s primary actionable element.
- *
- * ```tsx
- * <Button size="sm">Save</Button>
- * <Button variant="alt" size="md">Cancel</Button>
- * <Button size="lg" disabled>Processing…</Button>
- * ```
- *
- * @component
- * @param {ButtonProps}    props            Component props.
- * @param {'main'|'alt'}  [props.variant]   Visual style (default `"main"`).
- * @param {'sm'|'md'|'lg'}[props.size]      Size preset (default `"md"`).
- * @param {string|string[]} [props.preset]  Style-preset name(s) registered
- *                                          via `definePreset()`.
- * @returns {JSX.Element} Rendered button element.
- */
+/*───────────────────────────────────────────────────────────────────────────*/
+/* Component                                                                 */
+
 export const Button: React.FC<ButtonProps> = ({
   variant = 'main',
   size = 'md',
@@ -87,7 +57,6 @@ export const Button: React.FC<ButtonProps> = ({
 }) => {
   const { theme } = useTheme();
   const sizeMap = createSizeMap(theme);
-
   const { padV, padH, font, height } = sizeMap[size];
 
   /* Alt’s padding is reduced 1 px per side to offset its 1 px border. */
@@ -101,19 +70,15 @@ export const Button: React.FC<ButtonProps> = ({
     align-items: center;
     justify-content: center;
 
-    height: ${height};        /* Exterior dimension token */
-    min-width: ${height};     /* Ensures square feel on minimal labels */
+    height: ${height};
+    min-width: ${height};
 
     padding: ${padRule};
     box-sizing: border-box;
 
     border-radius: 4px;
-    border: ${variant === 'alt'
-      ? `1px solid ${theme.colors.text}`
-      : 'none'};
-    background: ${variant === 'main'
-      ? theme.colors.primary
-      : 'transparent'};
+    border: ${variant === 'alt' ? `1px solid ${theme.colors.text}` : 'none'};
+    background: ${variant === 'main' ? theme.colors.primary : 'transparent'};
     color: ${theme.colors.text};
 
     font-size: ${font};
@@ -122,7 +87,6 @@ export const Button: React.FC<ButtonProps> = ({
 
     transition: background 0.2s ease, color 0.2s ease, filter 0.2s ease;
 
-    /* Hover (enabled only) */
     &:hover:not(:disabled) {
       ${variant === 'main'
         ? 'filter: brightness(1.25);'
@@ -132,14 +96,12 @@ export const Button: React.FC<ButtonProps> = ({
         `}
     }
 
-    /* Disabled state */
     &:disabled {
       opacity: 0.5;
-      cursor: default; /* Pointer doesn’t change on hover */
+      cursor: default;
     }
   `;
 
-  /* Merge optional preset classes with any incoming className */
   const presetClasses = p ? preset(p) : '';
 
   return (
