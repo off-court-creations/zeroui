@@ -1,3 +1,4 @@
+// src/components/Button.tsx
 import React from 'react';
 import { styled } from '../css/createStyled';
 import { useTheme } from '../system/themeStore';
@@ -91,6 +92,21 @@ export const Button: React.FC<ButtonProps> = ({
     cursor: pointer;
 
     transition: background 0.2s ease, color 0.2s ease, filter 0.2s ease, transform 0.1s ease;
+
+    /*──────────────────────────────────────*/
+    /* Disable iOS text selection / tap-hold*/
+    user-select: none;            /* Standard */
+    -webkit-user-select: none;    /* Safari / iOS */
+    -ms-user-select: none;        /* IE / Edge */
+    -webkit-touch-callout: none;  /* iOS long-press menu */
+    -webkit-tap-highlight-color: transparent;
+
+    /* Ensure nested elements are also non-selectable */
+    & * {
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    /*──────────────────────────────────────*/
 
     &:hover:not(:disabled) {
       ${variant === 'main'
