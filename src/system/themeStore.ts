@@ -50,6 +50,7 @@ const lightColors = {
   secondary: '#F7C0A1',
   tertiary:  '#9AE5E6',
   background:'#FFFFFF',
+  backgroundAlt:'#CCCCCC',
   text:      '#111111',
 } as const;
 
@@ -58,6 +59,7 @@ const darkColors = {
   secondary: '#EF8243',
   tertiary:  '#4BD0D2',
   background:'#222222',
+  backgroundAlt: '#CCCCCC',
   text:      '#EEEEEE',
 } as const;
 
