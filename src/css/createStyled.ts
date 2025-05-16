@@ -30,3 +30,5 @@ export function styled<Tag extends keyof JSX.IntrinsicElements>(tag: Tag) {
     };
   };
 }
+
+export { styleCache };

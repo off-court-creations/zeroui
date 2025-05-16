@@ -2,7 +2,9 @@
 import React from 'react';
 import { styled } from '../css/createStyled';
 import { useTheme } from '../system/themeStore';
-import type { Theme } from '../system/themeStore'; 
+import type { Theme } from '../system/themeStore';
+import { preset } from '../css/stylePresets';
+import type { Presettable } from '../types';
 
 /**
  * Visual theme variants a Button can render.
@@ -25,7 +27,8 @@ export type ButtonSize = 'sm' | 'md' | 'lg';
  * Extends every intrinsic `<button>` prop and adds ZeroUI-specific controls.
  */
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    Presettable {
   /** Visual style: `"main"` (solid) or `"alt"` (outlined). */
   variant?: ButtonVariant;
   /** Overall control size: `"sm" | "md" | "lg"`. */
@@ -38,20 +41,20 @@ export interface ButtonProps
  */
 const createSizeMap = (theme: Theme) => ({
   sm: {
-    padV: theme.spacing.sm,  // 4 px
-    padH: theme.spacing.md,  // 8 px
+    padV: theme.spacing.sm, // 4 px
+    padH: theme.spacing.md, // 8 px
     font: '0.75rem',
     height: '32px',
   },
   md: {
-    padV: theme.spacing.sm,  // 4 px
-    padH: theme.spacing.lg,  // 16 px
+    padV: theme.spacing.sm, // 4 px
+    padH: theme.spacing.lg, // 16 px
     font: '0.875rem',
     height: '40px',
   },
   lg: {
-    padV: theme.spacing.md,  // 8 px
-    padH: theme.spacing.lg,  // 16 px
+    padV: theme.spacing.md, // 8 px
+    padH: theme.spacing.lg, // 16 px
     font: '1rem',
     height: '48px',
   },
@@ -67,14 +70,18 @@ const createSizeMap = (theme: Theme) => ({
  * ```
  *
  * @component
- * @param {ButtonProps}   props           Component props.
- * @param {'main'|'alt'} [props.variant]  Visual style (default `"main"`).
- * @param {'sm'|'md'|'lg'} [props.size]   Size preset (default `"md"`).
+ * @param {ButtonProps}    props            Component props.
+ * @param {'main'|'alt'}  [props.variant]   Visual style (default `"main"`).
+ * @param {'sm'|'md'|'lg'}[props.size]      Size preset (default `"md"`).
+ * @param {string|string[]} [props.preset]  Style-preset name(s) registered
+ *                                          via `definePreset()`.
  * @returns {JSX.Element} Rendered button element.
  */
 export const Button: React.FC<ButtonProps> = ({
   variant = 'main',
   size = 'md',
+  preset: p,
+  className,
   children,
   ...props
 }) => {
@@ -128,12 +135,19 @@ export const Button: React.FC<ButtonProps> = ({
     /* Disabled state */
     &:disabled {
       opacity: 0.5;
-      cursor: default;  /* Pointer doesn’t change on hover */
+      cursor: default; /* Pointer doesn’t change on hover */
     }
   `;
 
+  /* Merge optional preset classes with any incoming className */
+  const presetClasses = p ? preset(p) : '';
+
   return (
-    <Component type="button" {...props}>
+    <Component
+      type="button"
+      {...props}
+      className={[presetClasses, className].filter(Boolean).join(' ')}
+    >
       {children}
     </Component>
   );

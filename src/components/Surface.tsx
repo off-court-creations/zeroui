@@ -7,6 +7,8 @@ import React, {
   useState,
 } from 'react';
 import { Breakpoint, useTheme } from '../system/themeStore';
+import { preset } from '../css/stylePresets';
+import type { Presettable } from '../types';
 
 /** Context value returned by `useSurface()` */
 export interface SurfaceContext {
@@ -22,6 +24,11 @@ export interface SurfaceContext {
 
 const SurfaceCtx = createContext<SurfaceContext | null>(null);
 
+/** Public prop type for Surface */
+export interface SurfaceProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    Presettable {}
+
 /**
  * **Surface** – the viewport-filling root container for ZeroUI apps.
  *
@@ -32,6 +39,8 @@ const SurfaceCtx = createContext<SurfaceContext | null>(null);
  *    - `width` / `height`
  *    - current `breakpoint` (theme-driven)
  *    - `hasScrollbar` boolean
+ * 4. Accepts **style presets** via the `preset` prop so you can rapidly
+ *    skin different app shells.
  *
  * This data is provided via `useSurface()` so any child (e.g. `Typography`)
  * can respond to viewport changes without prop drilling.
@@ -47,17 +56,26 @@ const SurfaceCtx = createContext<SurfaceContext | null>(null);
  * </Surface>
  * ```
  *
- * @example <caption>Consuming the context</caption>
+ * @example <caption>Using a style preset</caption>
  * ```tsx
- * const { breakpoint, hasScrollbar } = useSurface();
+ * definePreset('appShell', t => `
+ *   background:${t.colors.background};
+ *   color:${t.colors.text};
+ * `);
+ *
+ * <Surface preset="appShell">
+ *   …
+ * </Surface>
  * ```
  *
- * @param {React.HTMLAttributes<HTMLDivElement>} props All native div props + optional inline style.
+ * @param {SurfaceProps & React.HTMLAttributes<HTMLDivElement>} props Component props.
  * @returns {JSX.Element} A viewport-fixed wrapper that provides responsive context.
  */
-export const Surface: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
+export const Surface: React.FC<SurfaceProps> = ({
   children,
   style,
+  preset: p,
+  className,
   ...props
 }) => {
   const ref = useRef<HTMLDivElement>(null);
@@ -103,10 +121,13 @@ export const Surface: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
     return () => ro.disconnect();
   }, [theme.breakpoints]);
 
+  const presetClasses = p ? preset(p) : '';
+
   return (
     <SurfaceCtx.Provider value={state}>
       <div
         ref={ref}
+        className={[presetClasses, className].filter(Boolean).join(' ')}
         style={{
           position: 'fixed',
           top: 0,

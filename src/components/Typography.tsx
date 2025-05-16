@@ -3,6 +3,8 @@ import React from 'react';
 import { styled } from '../css/createStyled';
 import { useTheme } from '../system/themeStore';
 import { useSurface } from './Surface';
+import { preset } from '../css/stylePresets';
+import type { Presettable } from '../types';
 
 /** Available text variants (mapped to semantic HTML tags) */
 export type Variant =
@@ -17,7 +19,8 @@ export type Variant =
 
 /** Public prop type for Typography */
 export interface TypographyProps
-  extends React.HTMLAttributes<HTMLElement> {
+  extends React.HTMLAttributes<HTMLElement>,
+    Presettable {
   /** Text style preset. */
   variant?: Variant;
   /** Force bold weight (`font-weight: 700`). */
@@ -81,6 +84,8 @@ export const Typography: React.FC<TypographyProps> = ({
   fontSize,
   scale,
   autoSize = false,
+  preset: p,
+  className,
   children,
   ...props
 }) => {
@@ -111,7 +116,16 @@ export const Typography: React.FC<TypographyProps> = ({
     line-height: 1.4;
   `;
 
-  return <Component {...props}>{children}</Component>;
+  const presetClasses = p ? preset(p) : '';
+
+  return (
+    <Component
+      {...props}
+      className={[presetClasses, className].filter(Boolean).join(' ')}
+    >
+      {children}
+    </Component>
+  );
 };
 
 export default Typography;

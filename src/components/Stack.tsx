@@ -2,9 +2,13 @@
 import React from 'react';
 import { styled } from '../css/createStyled';
 import { useTheme, Theme } from '../system/themeStore';
+import { preset } from '../css/stylePresets';
+import type { Presettable } from '../types';
 
 /** Public prop type for Stack (must be exported) */
-export interface StackProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface StackProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    Presettable {
   /** Row (horizontal) or column (vertical) layout */
   direction?: 'row' | 'column';
   /** Gap between children – theme spacing key (`'sm' | 'md' | 'lg'`) or any CSS size (`'8px'`, `'1rem'`, etc.) */
@@ -22,6 +26,7 @@ export interface StackProps extends React.HTMLAttributes<HTMLDivElement> {
  * |------------|-----------------------------------------|-----------|-----------------------------------------------|
  * | `direction`| `'row' \\| 'column'`                    | `'column'`| Layout axis.                                  |
  * | `spacing`  | `keyof Theme['spacing'] \\| string`     | `'0'`     | Gap between items – design token or CSS size. |
+ * | `preset`   | `string \\| string[]`                   | `undefined`| Style preset(s) defined via `definePreset()`. |
  *
  * @component
  *
@@ -35,7 +40,7 @@ export interface StackProps extends React.HTMLAttributes<HTMLDivElement> {
  *
  * @example <caption>Horizontal stack with custom gap</caption>
  * ```tsx
- * <Stack direction="row" spacing="24px">
+ * <Stack direction="row" spacing="24px" preset="card">
  *   <Button variant="main">Accept</Button>
  *   <Button variant="alt">Decline</Button>
  * </Stack>
@@ -47,6 +52,8 @@ export interface StackProps extends React.HTMLAttributes<HTMLDivElement> {
 export const Stack: React.FC<StackProps> = ({
   direction = 'column',
   spacing = '0',
+  preset: p,
+  className,
   children,
   ...props
 }) => {
@@ -64,7 +71,16 @@ export const Stack: React.FC<StackProps> = ({
     gap: ${gapValue};
   `;
 
-  return <Component {...props}>{children}</Component>;
+  const presetClasses = p ? preset(p) : '';
+
+  return (
+    <Component
+      {...props}
+      className={[presetClasses, className].filter(Boolean).join(' ')}
+    >
+      {children}
+    </Component>
+  );
 };
 
 export default Stack;
