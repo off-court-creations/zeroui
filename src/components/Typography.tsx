@@ -1,3 +1,6 @@
+// ─────────────────────────────────────────────────────────────
+// src/components/Typography.tsx
+// ─────────────────────────────────────────────────────────────
 import React from 'react';
 import { styled } from '../css/createStyled';
 import { useTheme } from '../system/themeStore';
@@ -35,7 +38,7 @@ export const Typography: React.FC<TypographyProps> = ({
   fontSize,
   scale,
   autoSize = false,
-  color,
+  color,                 // ← explicit override
   preset: p,
   className,
   children,
@@ -51,13 +54,18 @@ export const Typography: React.FC<TypographyProps> = ({
   if (scale != null) size = `calc(${defaultSize} * ${scale})`;
   if (fontSize) size = fontSize;
 
-  /* ----- colour --------------------------------------------------------- */
-  const resolvedColor =
-    color ?? `var(--zero-text-color, ${theme.colors.text})`;
+  /* ----- colour rule (conditional) ------------------------------------- */
+  // 1. explicit colour prop → always emit
+  // 2. rely on CSS variable if present
+  // 3. otherwise emit *nothing* so the preset / parent colour wins
+  const needsRule = color != null;
+  const colourCSS = needsRule
+    ? color
+    : 'var(--zero-text-color)';   // will be ignored if the var is unset
 
-  const Component = styled(Tag)`
+  const Component = styled(Tag as any)<{ $needs?: boolean }>`
     margin: 0;
-    color: ${resolvedColor};
+    ${props => props.$needs && `color: ${colourCSS};`}
     font-size: ${size};
     font-weight: ${bold ? 700 : 400};
     font-style: ${italic ? 'italic' : 'normal'};
@@ -69,6 +77,7 @@ export const Typography: React.FC<TypographyProps> = ({
   return (
     <Component
       {...props}
+      $needs={needsRule}
       className={[presetClasses, className].filter(Boolean).join(' ')}
     >
       {children}
