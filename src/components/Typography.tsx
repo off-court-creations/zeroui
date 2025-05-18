@@ -18,7 +18,7 @@ export interface TypographyProps
   fontSize?: string;
   scale?: number;
   autoSize?: boolean;
-  /** Explicit text color; overrides inheritance */
+  /** Explicit colour override */
   color?: string;
 }
 
@@ -45,23 +45,21 @@ export const Typography: React.FC<TypographyProps> = ({
   const { theme } = useTheme();
   const { breakpoint } = useSurface();
 
-  /* -------- size logic -------- */
+  /* ----- size ----------------------------------------------------------- */
   const defaultSize = theme.typography[variant].md;
   let size = autoSize ? theme.typography[variant][breakpoint] : defaultSize;
   if (scale != null) size = `calc(${defaultSize} * ${scale})`;
   if (fontSize) size = fontSize;
 
-  /* -------- color logic --------
-     - Explicit `color` prop wins
-     - Otherwise inherit (`currentColor`) which responds to Button hover etc.
-     - Panels/Surfaces now set their own `color`, so inheritance gives proper contrast. */
-  const resolvedColor = color ?? 'currentColor';
+  /* ----- colour --------------------------------------------------------- */
+  const resolvedColor =
+    color ?? `var(--zero-text-color, ${theme.colors.text})`;
 
   const Component = styled(Tag)`
     margin: 0;
     color: ${resolvedColor};
     font-size: ${size};
-    font-weight: ${bold ? '700' : '400'};
+    font-weight: ${bold ? 700 : 400};
     font-style: ${italic ? 'italic' : 'normal'};
     line-height: 1.4;
   `;

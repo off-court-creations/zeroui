@@ -17,23 +17,28 @@ export interface PanelProps
 /*───────────────────────────────────────────────────────────*/
 const Base = styled('div')<{
   $variant: PanelVariant;
-  $fullWidth?: boolean;
+  $full?: boolean;
   $outline: string;
   $bg: string;
-  $textColor: string;
+  $text?: string;
 }>`
   box-sizing: border-box;
   vertical-align: top;
 
-  display: ${({ $fullWidth }) => ($fullWidth ? 'block' : 'inline-block')};
-  width: ${({ $fullWidth }) => ($fullWidth ? '100%' : 'auto')};
-  align-self: ${({ $fullWidth }) => ($fullWidth ? 'stretch' : 'flex-start')};
+  display: ${({ $full }) => ($full ? 'block' : 'inline-block')};
+  width  : ${({ $full }) => ($full ? '100%' : 'auto')};
+  align-self: ${({ $full }) => ($full ? 'stretch' : 'flex-start')};
 
-  background: ${({ $variant, $bg }) => ($variant === 'main' ? $bg : 'transparent')};
-  border: ${({ $variant, $outline }) => ($variant === 'alt' ? `1px solid ${$outline}` : 'none')};
+  background: ${({ $variant, $bg }) =>
+    $variant === 'main' ? $bg : 'transparent'};
+  border: ${({ $variant, $outline }) =>
+    $variant === 'alt' ? `1px solid ${$outline}` : 'none'};
 
-  color: ${({ $textColor }) => $textColor};
-  --zero-text-color: ${({ $textColor }) => $textColor};
+  ${({ $text }) => $text ? `
+    color: ${$text};
+    --zero-text-color: ${$text};
+  ` : ''}
+
   --zero-bg: ${({ $bg }) => $bg};
 `;
 
@@ -51,24 +56,29 @@ export const Panel: React.FC<PanelProps> = ({
   const { theme } = useTheme();
   const presetClasses = p ? preset(p) : '';
 
-  const bg = background ??
+  const bg =
+    background ??
     (variant === 'main' ? theme.colors.backgroundAlt : 'transparent');
 
-  const textColor =
-    bg === theme.colors.primary   ? theme.colors.primaryText   :
-    bg === theme.colors.secondary ? theme.colors.secondaryText :
-    bg === theme.colors.tertiary  ? theme.colors.tertiaryText  :
-    theme.colors.text;
+  /* Don’t stomp on a parent’s colour when transparent ------------------- */
+  let textColour: string | undefined;
+  if (bg !== 'transparent') {
+    textColour =
+      bg === theme.colors.primary   ? theme.colors.primaryText   :
+      bg === theme.colors.secondary ? theme.colors.secondaryText :
+      bg === theme.colors.tertiary  ? theme.colors.tertiaryText  :
+      theme.colors.text;
+  }
 
   return (
     <Base
       {...rest}
       $variant={variant}
-      $fullWidth={fullWidth}
+      $full={fullWidth}
       $outline={theme.colors.backgroundAlt}
       $bg={bg}
-      $textColor={textColor}
-      style={{ ...style }}
+      $text={textColour}
+      style={style}
       className={[presetClasses, className].filter(Boolean).join(' ')}
     >
       {children}

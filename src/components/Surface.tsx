@@ -10,7 +10,6 @@ import { preset } from '../css/stylePresets';
 import type { Presettable } from '../types';
 
 /*───────────────────────────────────────────────────────────*/
-/** Context & state */
 export interface SurfaceContext {
   width: number;
   height: number;
@@ -21,13 +20,11 @@ export interface SurfaceContext {
 const SurfaceCtx = createContext<SurfaceContext | null>(null);
 
 /*───────────────────────────────────────────────────────────*/
-/** Props */
 export interface SurfaceProps
   extends React.HTMLAttributes<HTMLDivElement>,
     Presettable {}
 
 /*───────────────────────────────────────────────────────────*/
-/** Component */
 export const Surface: React.FC<SurfaceProps> = ({
   children,
   style,
@@ -35,9 +32,11 @@ export const Surface: React.FC<SurfaceProps> = ({
   className,
   ...props
 }) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const { theme } = useTheme();
+  const ref           = useRef<HTMLDivElement>(null);
+  const { theme }     = useTheme();
+  const presetClasses = p ? preset(p) : '';
 
+  /* ----- viewport metrics ---------------------------------------------- */
   const [state, setState] = useState<SurfaceContext>({
     width: 0,
     height: 0,
@@ -45,47 +44,39 @@ export const Surface: React.FC<SurfaceProps> = ({
     hasScrollbar: false,
   });
 
-  /* Breakpoint resolver */
-  const getBreakpoint = (width: number): Breakpoint => {
-    const entries = Object.entries(theme.breakpoints) as [
-      Breakpoint,
-      number
-    ][];
-    return entries.reduce<Breakpoint>(
-      (prev, [key, min]) => (width >= min ? key : prev),
-      'xs'
-    );
-  };
+  const bpFor = (w: number): Breakpoint =>
+    (Object.entries(theme.breakpoints) as [Breakpoint, number][])
+      .reduce<Breakpoint>((acc, [key, min]) => (w >= min ? key : acc), 'xs');
 
-  /* ResizeObserver */
   useEffect(() => {
     if (!ref.current) return;
     const node = ref.current;
 
     const ro = new ResizeObserver(([entry]) => {
       const { width, height } = entry.contentRect;
-      const hasScroll =
-        node.scrollHeight > node.clientHeight ||
-        node.scrollWidth > node.clientWidth;
       setState({
         width,
         height,
-        hasScrollbar: hasScroll,
-        breakpoint: getBreakpoint(width),
+        hasScrollbar:
+          node.scrollHeight > node.clientHeight ||
+          node.scrollWidth  > node.clientWidth,
+        breakpoint: bpFor(width),
       });
     });
-
     ro.observe(node);
     return () => ro.disconnect();
   }, [theme.breakpoints]);
 
-  const presetClasses = p ? preset(p) : '';
+  /* ----- default styles & smart-colour vars ---------------------------- */
+  const defaults: React.CSSProperties = {
+    background: theme.colors.background,
+    color     : theme.colors.text,
+  };
 
-  /* Default background if none supplied */
-  const defaultBg =
-    !style?.background && !style?.backgroundColor
-      ? { background: theme.colors.background }
-      : undefined;
+  const cssVars: React.CSSProperties = {
+    '--zero-bg'        : defaults.background,
+    '--zero-text-color': defaults.color,
+  } as any;
 
   return (
     <SurfaceCtx.Provider value={state}>
@@ -94,16 +85,14 @@ export const Surface: React.FC<SurfaceProps> = ({
         className={[presetClasses, className].filter(Boolean).join(' ')}
         style={{
           position: 'fixed',
-          top: 0,
-          right: 0,
-          bottom: 0,
-          left: 0,
-          paddingTop: 'env(safe-area-inset-top)',
-          paddingRight: 'env(safe-area-inset-right)',
+          inset: 0,
+          paddingTop   : 'env(safe-area-inset-top)',
+          paddingRight : 'env(safe-area-inset-right)',
           paddingBottom: 'env(safe-area-inset-bottom)',
-          paddingLeft: 'env(safe-area-inset-left)',
+          paddingLeft  : 'env(safe-area-inset-left)',
           overflow: 'auto',
-          ...defaultBg,
+          ...defaults,
+          ...cssVars,
           ...style,
         }}
         {...props}
@@ -117,7 +106,6 @@ export const Surface: React.FC<SurfaceProps> = ({
 export default Surface;
 
 /*───────────────────────────────────────────────────────────*/
-/** Hook */
 export const useSurface = () => {
   const ctx = useContext(SurfaceCtx);
   if (!ctx)
