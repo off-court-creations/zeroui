@@ -1,50 +1,80 @@
-// src/components/Panel.tsx
 import React from 'react';
 import { styled } from '../css/createStyled';
-import { preset } from '../css/stylePresets';
 import { useTheme } from '../system/themeStore';
+import { preset } from '../css/stylePresets';
 import type { Presettable } from '../types';
 
-export interface PanelProps extends React.ComponentProps<'div'>, Presettable {
-  /** Set false to remove default background. */
-  backgroundAlt?: boolean;
+export type PanelVariant = 'main' | 'alt';
+
+export interface PanelProps
+  extends React.ComponentProps<'div'>,
+    Presettable {
+  variant?: PanelVariant;
+  fullWidth?: boolean;
+  /** Background override */
+  background?: string;
 }
 
-/**
- * Panel — Content-wrapping, visually separated container.
- * By default, gets theme.colors.backgroundAlt as background.
- * You can override the background with style/preset/class as needed.
- */
-const Base = styled('div')`
+/*───────────────────────────────────────────────────────────*/
+const Base = styled('div')<{
+  $variant: PanelVariant;
+  $fullWidth?: boolean;
+  $outline: string;
+  $bg: string;
+  $textColor: string;
+}>`
   box-sizing: border-box;
-  display: inline-block;
   vertical-align: top;
-  /* Background is handled inline for dynamic theme access */
+
+  display: ${({ $fullWidth }) => ($fullWidth ? 'block' : 'inline-block')};
+  width: ${({ $fullWidth }) => ($fullWidth ? '100%' : 'auto')};
+  align-self: ${({ $fullWidth }) => ($fullWidth ? 'stretch' : 'flex-start')};
+
+  background: ${({ $variant, $bg }) => ($variant === 'main' ? $bg : 'transparent')};
+  border: ${({ $variant, $outline }) => ($variant === 'alt' ? `1px solid ${$outline}` : 'none')};
+
+  /* Provide contrast color to children */
+  color: ${({ $textColor }) => $textColor};
+  --zero-text-color: ${({ $textColor }) => $textColor};
 `;
 
+/*───────────────────────────────────────────────────────────*/
 export const Panel: React.FC<PanelProps> = ({
+  variant = 'main',
+  fullWidth = false,
   preset: p,
   className,
   style,
-  backgroundAlt = true,
+  background,
+  children,
   ...rest
 }) => {
   const { theme } = useTheme();
   const presetClasses = p ? preset(p) : '';
 
-  // If background is not already overridden, apply default from theme
-  const bg =
-    backgroundAlt &&
-    (!style?.background && !style?.backgroundColor)
-      ? { background: theme.colors.backgroundAlt }
-      : undefined;
+  const bg = background ??
+    (variant === 'main' ? theme.colors.backgroundAlt : 'transparent');
+
+  /* Map background to matching text token */
+  const textColor =
+    bg === theme.colors.primary   ? theme.colors.primaryText   :
+    bg === theme.colors.secondary ? theme.colors.secondaryText :
+    bg === theme.colors.tertiary  ? theme.colors.tertiaryText  :
+    theme.colors.text;
 
   return (
     <Base
       {...rest}
-      style={{ ...bg, ...style }}
+      $variant={variant}
+      $fullWidth={fullWidth}
+      $outline={theme.colors.backgroundAlt}
+      $bg={bg}
+      $textColor={textColor}
+      style={{ ...style }}
       className={[presetClasses, className].filter(Boolean).join(' ')}
-    />
+    >
+      {children}
+    </Base>
   );
 };
 
