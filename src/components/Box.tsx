@@ -1,32 +1,40 @@
+// ─────────────────────────────────────────────────────────────
+// src/components/Box.tsx
+// ZeroUI Box – now respects background / color coming from presets
+// ─────────────────────────────────────────────────────────────
 import React from 'react';
 import { styled } from '../css/createStyled';
 import { useTheme } from '../system/themeStore';
 import { preset } from '../css/stylePresets';
 import type { Presettable } from '../types';
 
+/*───────────────────────────────────────────────────────────────*/
+/* Public props                                                  */
 export interface BoxProps
   extends React.ComponentProps<'div'>,
     Presettable {
+  /** Explicit background override */
   background?: string;
+  /** Explicit text-colour override */
   textColor?: string;
 }
 
-/*───────────────────────────────────────────────────────────*/
+/*───────────────────────────────────────────────────────────────*/
+/* Styled primitive                                              */
 const Base = styled('div')<{
-  $bg: string | undefined;
-  $text: string;
+  $bg?: string;
+  $text?: string;
 }>`
   box-sizing: border-box;
   display: block;
 
-  background: ${({ $bg }) => $bg ?? 'transparent'};
-  color: ${({ $text }) => $text};
-
-  --zero-text-color: ${({ $text }) => $text};
-  --zero-bg: ${({ $bg }) => $bg ?? 'transparent'};
+  /* Only set when an override is supplied */
+  ${({ $bg })   => $bg   && `background: ${$bg}; --zero-bg: ${$bg};`}
+  ${({ $text }) => $text && `color: ${$text}; --zero-text-color: ${$text};`}
 `;
 
-/*───────────────────────────────────────────────────────────*/
+/*───────────────────────────────────────────────────────────────*/
+/* Component                                                     */
 export const Box: React.FC<BoxProps> = ({
   preset: p,
   className,
@@ -35,17 +43,18 @@ export const Box: React.FC<BoxProps> = ({
   style,
   ...rest
 }) => {
-  const { theme } = useTheme();
-  const presetClasses = p ? preset(p) : '';
+  const { theme }   = useTheme();
+  const presetClass  = p ? preset(p) : '';
 
-  let resolvedText = textColor ?? theme.colors.text;
+  /* Resolve text colour only when caller gives us a cue         */
+  let resolvedText: string | undefined = textColor;
 
-  if (!textColor && background) {
+  if (!resolvedText && background) {
     resolvedText =
       background === theme.colors.primary   ? theme.colors.primaryText   :
       background === theme.colors.secondary ? theme.colors.secondaryText :
       background === theme.colors.tertiary  ? theme.colors.tertiaryText  :
-      theme.colors.text;
+      undefined; // let preset / cascade decide
   }
 
   return (
@@ -54,7 +63,7 @@ export const Box: React.FC<BoxProps> = ({
       $bg={background}
       $text={resolvedText}
       style={style}
-      className={[presetClasses, className].filter(Boolean).join(' ')}
+      className={[presetClass, className].filter(Boolean).join(' ')}
     />
   );
 };
