@@ -1,3 +1,6 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// src/components/Button.tsx
+// ─────────────────────────────────────────────────────────────────────────────
 import React from 'react';
 import { styled } from '../css/createStyled';
 import { useTheme } from '../system/themeStore';
@@ -6,7 +9,7 @@ import { preset } from '../css/stylePresets';
 import type { Presettable } from '../types';
 
 /*───────────────────────────────────────────────────────────*/
-export type ButtonVariant = 'main' | 'alt';
+export type ButtonVariant = 'contained' | 'outlined';
 export type ButtonSize    = 'sm' | 'md' | 'lg';
 
 export interface ButtonProps
@@ -56,13 +59,13 @@ const BaseBtn = styled('button')<{
 
   border-radius: 4px;
   border: ${({ $variant }) =>
-    $variant === 'alt' ? '1px solid var(--zero-text-color, currentColor)' : 'none'};
+    $variant === 'outlined' ? '1px solid var(--zero-text-color, currentColor)' : 'none'};
 
   background: ${({ $variant, $primary }) =>
-    $variant === 'main' ? $primary : 'transparent'};
+    $variant === 'contained' ? $primary : 'transparent'};
 
   color: ${({ $variant, $themeText }) =>
-    $variant === 'main'
+    $variant === 'contained'
       ? $themeText
       : 'var(--zero-text-color, ' + $themeText + ')'};
 
@@ -79,10 +82,10 @@ const BaseBtn = styled('button')<{
 
   &:hover:not(:disabled) {
     ${({ $variant, $primary, $primaryText }) =>
-      $variant === 'main'
+      $variant === 'contained'
         ? 'filter: brightness(1.25);'
         : `
-          background: var(--zero-text-color, ${$primary});
+          background: ${$primary};
           color: ${$primaryText};
         `}
   }
@@ -101,12 +104,14 @@ const BaseBtn = styled('button')<{
     pointer-events: none;
     transition: transform 0.3s ease, opacity 0.3s ease;
   }
-  &:active::after { opacity: 1; transform: scale(1); }
+
+  /* Ripple now suppressed on disabled buttons */
+  &:active:not(:disabled)::after { opacity: 1; transform: scale(1); }
 `;
 
 /* Component -----------------------------------------------*/
 export const Button: React.FC<ButtonProps> = ({
-  variant = 'main',
+  variant = 'contained',
   size = 'md',
   fullWidth = false,
   preset: p,
@@ -118,13 +123,13 @@ export const Button: React.FC<ButtonProps> = ({
   const { padV, padH, font, height } = createSizeMap(theme)[size];
 
   const padRule =
-    variant === 'alt'
+    variant === 'outlined'
       ? `calc(${padV} - 1px) calc(${padH} - 1px)`
       : `${padV} ${padH}`;
 
   const minW = `calc(${height} * 2)`;
   const rippleColor =
-    variant === 'main'
+    variant === 'contained'
       ? 'rgba(255,255,255,0.25)'
       : 'rgba(0,0,0,0.1)';
 
