@@ -1,4 +1,3 @@
-// src/components/Surface.tsx
 import React, {
   createContext,
   useContext,
@@ -10,67 +9,25 @@ import { Breakpoint, useTheme } from '../system/themeStore';
 import { preset } from '../css/stylePresets';
 import type { Presettable } from '../types';
 
-/** Context value returned by `useSurface()` */
+/*───────────────────────────────────────────────────────────*/
+/** Context & state */
 export interface SurfaceContext {
-  /** Current content width (inside safe-area padding). */
   width: number;
-  /** Current content height (inside safe-area padding). */
   height: number;
-  /** Active breakpoint derived from theme. */
   breakpoint: Breakpoint;
-  /** `true` if overflow causes a scrollbar. */
   hasScrollbar: boolean;
 }
 
 const SurfaceCtx = createContext<SurfaceContext | null>(null);
 
-/** Public prop type for Surface */
+/*───────────────────────────────────────────────────────────*/
+/** Props */
 export interface SurfaceProps
   extends React.HTMLAttributes<HTMLDivElement>,
     Presettable {}
 
-/**
- * **Surface** – the viewport-filling root container for ZeroUI apps.
- *
- * It automatically:
- * 1. Occupies the full safe-area of the device (`position: fixed; inset: 0`)
- * 2. Adds `env(safe-area-inset-*)` padding to avoid notches & sensors
- * 3. Observes its own size with `ResizeObserver`, exposing:
- *    - `width` / `height`
- *    - current `breakpoint` (theme-driven)
- *    - `hasScrollbar` boolean
- * 4. Accepts **style presets** via the `preset` prop so you can rapidly
- *    skin different app shells.
- *
- * This data is provided via `useSurface()` so any child (e.g. `Typography`)
- * can respond to viewport changes without prop drilling.
- *
- * @component
- *
- * @example <caption>Basic usage</caption>
- * ```tsx
- * <Surface style={{ background: '#fafafa' }}>
- *   <Stack spacing="md">
- *     <Typography variant="h1">Hello!</Typography>
- *   </Stack>
- * </Surface>
- * ```
- *
- * @example <caption>Using a style preset</caption>
- * ```tsx
- * definePreset('appShell', t => `
- *   background:${t.colors.background};
- *   color:${t.colors.text};
- * `);
- *
- * <Surface preset="appShell">
- *   …
- * </Surface>
- * ```
- *
- * @param {SurfaceProps & React.HTMLAttributes<HTMLDivElement>} props Component props.
- * @returns {JSX.Element} A viewport-fixed wrapper that provides responsive context.
- */
+/*───────────────────────────────────────────────────────────*/
+/** Component */
 export const Surface: React.FC<SurfaceProps> = ({
   children,
   style,
@@ -88,7 +45,7 @@ export const Surface: React.FC<SurfaceProps> = ({
     hasScrollbar: false,
   });
 
-  // Derive breakpoint from width using theme tokens
+  /* Breakpoint resolver */
   const getBreakpoint = (width: number): Breakpoint => {
     const entries = Object.entries(theme.breakpoints) as [
       Breakpoint,
@@ -100,6 +57,7 @@ export const Surface: React.FC<SurfaceProps> = ({
     );
   };
 
+  /* ResizeObserver */
   useEffect(() => {
     if (!ref.current) return;
     const node = ref.current;
@@ -123,6 +81,12 @@ export const Surface: React.FC<SurfaceProps> = ({
 
   const presetClasses = p ? preset(p) : '';
 
+  /* Default background if none supplied */
+  const defaultBg =
+    !style?.background && !style?.backgroundColor
+      ? { background: theme.colors.background }
+      : undefined;
+
   return (
     <SurfaceCtx.Provider value={state}>
       <div
@@ -139,6 +103,7 @@ export const Surface: React.FC<SurfaceProps> = ({
           paddingBottom: 'env(safe-area-inset-bottom)',
           paddingLeft: 'env(safe-area-inset-left)',
           overflow: 'auto',
+          ...defaultBg,
           ...style,
         }}
         {...props}
@@ -151,8 +116,8 @@ export const Surface: React.FC<SurfaceProps> = ({
 
 export default Surface;
 
-/* ------------------------------------------------------------------ */
-/** Hook for consuming the current Surface state */
+/*───────────────────────────────────────────────────────────*/
+/** Hook */
 export const useSurface = () => {
   const ctx = useContext(SurfaceCtx);
   if (!ctx)

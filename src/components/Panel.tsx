@@ -11,7 +11,6 @@ export interface PanelProps
     Presettable {
   variant?: PanelVariant;
   fullWidth?: boolean;
-  /** Background override */
   background?: string;
 }
 
@@ -33,9 +32,9 @@ const Base = styled('div')<{
   background: ${({ $variant, $bg }) => ($variant === 'main' ? $bg : 'transparent')};
   border: ${({ $variant, $outline }) => ($variant === 'alt' ? `1px solid ${$outline}` : 'none')};
 
-  /* Provide contrast color to children */
   color: ${({ $textColor }) => $textColor};
   --zero-text-color: ${({ $textColor }) => $textColor};
+  --zero-bg: ${({ $bg }) => $bg};
 `;
 
 /*───────────────────────────────────────────────────────────*/
@@ -55,7 +54,6 @@ export const Panel: React.FC<PanelProps> = ({
   const bg = background ??
     (variant === 'main' ? theme.colors.backgroundAlt : 'transparent');
 
-  /* Map background to matching text token */
   const textColor =
     bg === theme.colors.primary   ? theme.colors.primaryText   :
     bg === theme.colors.secondary ? theme.colors.secondaryText :

@@ -6,8 +6,6 @@ import { preset } from '../css/stylePresets';
 import type { Presettable } from '../types';
 
 /*───────────────────────────────────────────────────────────*/
-/* Types */
-
 export type ButtonVariant = 'main' | 'alt';
 export type ButtonSize    = 'sm' | 'md' | 'lg';
 
@@ -16,29 +14,27 @@ export interface ButtonProps
     Presettable {
   variant?: ButtonVariant;
   size?: ButtonSize;
+  /** Stretch to container width when true */
   fullWidth?: boolean;
 }
 
-/*───────────────────────────────────────────────────────────*/
-/* Size map (REM based) */
-
+/* Size map -------------------------------------------------*/
 const createSizeMap = (theme: Theme) => ({
   sm: { padV: theme.spacing.sm, padH: theme.spacing.md, font: '0.75rem',  height: '2rem'  },
   md: { padV: theme.spacing.sm, padH: theme.spacing.lg, font: '0.875rem', height: '2.5rem'},
   lg: { padV: theme.spacing.md, padH: theme.spacing.lg, font: '1rem',     height: '3rem'  },
 } as const);
 
-/*───────────────────────────────────────────────────────────*/
-/* Styled base */
-
+/* Styled base ---------------------------------------------*/
 const BaseBtn = styled('button')<{
   $variant: ButtonVariant;
-  $height: string;         // ← string now
+  $height: string;
   $padRule: string;
   $font: string;
   $minW: string;
   $primary: string;
-  $text: string;
+  $themeText: string;
+  $primaryText: string;
   $ripple: string;
   $fullWidth?: boolean;
 }>`
@@ -54,40 +50,44 @@ const BaseBtn = styled('button')<{
   padding: ${({ $padRule }) => $padRule};
   box-sizing: border-box;
 
-  width: ${({ $fullWidth }) => ($fullWidth ? '100%' : 'auto')};
+  /* Prevent flex-column stretch unless fullWidth requested */
   align-self: ${({ $fullWidth }) => ($fullWidth ? 'stretch' : 'flex-start')};
+  width: ${({ $fullWidth }) => ($fullWidth ? '100%' : 'auto')};
 
   border-radius: 4px;
-  border: ${({ $variant, $text }) => ($variant === 'alt' ? `1px solid ${$text}` : 'none')};
-  background: ${({ $variant, $primary }) => ($variant === 'main' ? $primary : 'transparent')};
-  color: ${({ $text }) => $text};
+  border: ${({ $variant }) =>
+    $variant === 'alt' ? '1px solid var(--zero-text-color, currentColor)' : 'none'};
+
+  background: ${({ $variant, $primary }) =>
+    $variant === 'main' ? $primary : 'transparent'};
+
+  color: ${({ $variant, $themeText }) =>
+    $variant === 'main'
+      ? $themeText
+      : 'var(--zero-text-color, ' + $themeText + ')'};
 
   font-size: ${({ $font }) => $font};
   font-weight: 600;
   cursor: pointer;
 
-  transition: background 0.2s ease, color 0.2s ease, filter 0.2s ease, transform 0.1s ease;
+  transition: background 0.2s ease, color 0.2s ease,
+    filter 0.2s ease, transform 0.1s ease;
 
   user-select: none;
   -webkit-user-select: none;
   -ms-user-select: none;
-  -webkit-touch-callout: none;
-  -webkit-tap-highlight-color: transparent;
-
-  & * {
-    user-select: none;
-    -webkit-user-select: none;
-  }
 
   &:hover:not(:disabled) {
-    ${({ $variant, $text, $primary }) =>
+    ${({ $variant, $primary, $primaryText }) =>
       $variant === 'main'
         ? 'filter: brightness(1.25);'
-        : `background: ${$text}; color: ${$primary};`}
+        : `
+          background: var(--zero-text-color, ${$primary});
+          color: ${$primaryText};
+        `}
   }
 
   &:active:not(:disabled) { transform: scale(0.96); }
-
   &:disabled { opacity: 0.5; cursor: default; }
 
   &::after {
@@ -104,9 +104,7 @@ const BaseBtn = styled('button')<{
   &:active::after { opacity: 1; transform: scale(1); }
 `;
 
-/*───────────────────────────────────────────────────────────*/
-/* Component */
-
+/* Component -----------------------------------------------*/
 export const Button: React.FC<ButtonProps> = ({
   variant = 'main',
   size = 'md',
@@ -124,10 +122,11 @@ export const Button: React.FC<ButtonProps> = ({
       ? `calc(${padV} - 1px) calc(${padH} - 1px)`
       : `${padV} ${padH}`;
 
-  const minW = `calc(${height} * 2)`;           // keep classic rectangle
-  const rippleColor = variant === 'main'
-    ? 'rgba(255,255,255,0.3)'
-    : 'rgba(0,0,0,0.1)';
+  const minW = `calc(${height} * 2)`;
+  const rippleColor =
+    variant === 'main'
+      ? 'rgba(255,255,255,0.25)'
+      : 'rgba(0,0,0,0.1)';
 
   const presetClasses = p ? preset(p) : '';
 
@@ -141,7 +140,8 @@ export const Button: React.FC<ButtonProps> = ({
       $font={font}
       $minW={minW}
       $primary={theme.colors.primary}
-      $text={theme.colors.text}
+      $themeText={theme.colors.text}
+      $primaryText={theme.colors.primaryText}
       $ripple={rippleColor}
       $fullWidth={fullWidth}
       className={[presetClasses, className].filter(Boolean).join(' ')}

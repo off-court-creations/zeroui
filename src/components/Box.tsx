@@ -7,14 +7,11 @@ import type { Presettable } from '../types';
 export interface BoxProps
   extends React.ComponentProps<'div'>,
     Presettable {
-  /** Optional background override (any CSS color). */
   background?: string;
-  /** Force a specific text color; otherwise auto-contrast / theme default. */
   textColor?: string;
 }
 
 /*───────────────────────────────────────────────────────────*/
-/** Base styled element – propagates readable text color. */
 const Base = styled('div')<{
   $bg: string | undefined;
   $text: string;
@@ -25,8 +22,8 @@ const Base = styled('div')<{
   background: ${({ $bg }) => $bg ?? 'transparent'};
   color: ${({ $text }) => $text};
 
-  /* Provide to descendants (e.g., <Typography />) */
   --zero-text-color: ${({ $text }) => $text};
+  --zero-bg: ${({ $bg }) => $bg ?? 'transparent'};
 `;
 
 /*───────────────────────────────────────────────────────────*/
@@ -41,7 +38,6 @@ export const Box: React.FC<BoxProps> = ({
   const { theme } = useTheme();
   const presetClasses = p ? preset(p) : '';
 
-  /* -------- resolve text color -------- */
   let resolvedText = textColor ?? theme.colors.text;
 
   if (!textColor && background) {
