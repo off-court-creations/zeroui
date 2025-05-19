@@ -1,48 +1,125 @@
 # `<Box />`
 
-ZeroUI’s **base layout primitive**.  
-A thin wrapper around a `<div>` that:
+ZeroUI’s **base layout primitive**. A thin wrapper around a `<div>` that:
 
-* forces `box-sizing: border-box`
-* accepts **all** native `<div>` attributes
-* supports ZeroUI’s **style preset** system via the `preset` prop
+- Enforces `box-sizing: border-box` and `display: block`.
+- Accepts **all** native `<div>` props (e.g. `id`, `onClick`, `style`, etc.).
+- Supports ad-hoc inline styles via the `style` prop.
+- Integrates with ZeroUI’s **style preset** system via the `preset` prop.
+- Provides optional themable overrides for `background` and `textColor`, emitting CSS variables `--zero-bg` and `--zero-text-color` for descendant components.
 
-Use `Box` as a neutral container before reaching for more opinionated components like `Stack` or `Surface`.
+Use `Box` as a neutral container before reaching for more opinionated layout components like `Stack` or viewport containers like `Surface`.
 
 ---
 
-## Examples
+## Usage
 
-### Simple wrapper
+### Basic Container
 
-```jsx
-import { Box } from '../components/Box';
-import { Typography } from '../components/Typography';
-
+```tsx
 <Box>
   Hello from inside Box
 </Box>
 ```
 
-### Inline styles
+### Inline Styles
 
-```jsx
-import { Box } from '../components/Box';
-
+```tsx
 <Box style={{ background: '#efefef', padding: 16, borderRadius: 8 }}>
   Gray background
 </Box>
+```
+
+### Inline Styles from Theme
+
+```tsx
+import { useTheme } from '../system/themeStore';
+import Typography from "./Typography";
+import Surface from "./Surface";
+
+console.log("theme")
+
+const { theme } = useTheme();
+
+
+<Surface fullscreen={false}>
+  <Box style={{ background: theme.colors.backgroundAlt, padding: theme.spacing.md, margin: theme.spacing.md }}>
+    <Typography>
+      There's inline styles here!
+    </Typography>
+  </Box>
+</Surface>
+
+```
+
+### Themed Background with Automatic Text Color
+
+```tsx
+import { useTheme } from '../system/themeStore';
+import Typography from "./Typography";
+import Surface from "./Surface";
+
+const { theme } = useTheme();
+
+<Surface fullscreen={false}>
+  <Box background={theme.colors.primary} style={{padding: theme.spacing.md}}>
+    <Typography>
+      When you use Typography, theme-based changes to the background of Boxes and other elements automatically recolors text.
+    </Typography>
+  </Box>
+</Surface>
+  
+```
+
+### Explicit Text Color Override
+
+```tsx
+import Typography from "./Typography";
+import { useTheme } from '../system/themeStore';
+import Surface from "./Surface";
+
+const { theme } = useTheme();
+
+<Surface fullscreen={false}>
+  <Box background="#222222" textColor="#00ff00" style={{padding: theme.spacing.md}}>
+      <Typography>
+        Here a custom background and text color set at the Box level, which Typography listens to.
+      </Typography>
+  </Box>
+</Surface>
 ```
 
 ---
 
 ## Props
 
-| Name      | Type                 | Default | Description                                                                  |
-|-----------|----------------------|---------|------------------------------------------------------------------------------|
-| `preset`  | `string` · `string[]`| —       | One or more preset style classes returned by `definePreset()`.               |
-| *(rest)*  | All native `<div>` props | —    | Forwarded to the underlying `<div>` element.                                 |
+| Name         | Type                          | Default | Description                                                                                           |
+|--------------|-------------------------------|---------|-------------------------------------------------------------------------------------------------------|
+| `preset`     | `string` or `string[]`       | —       | One or more preset names (defined via `definePreset()`), applied as CSS classes.                     |
+| `background` | `string`                      | —       | Explicit CSS `background` value. Sets `--zero-bg` for descendant components.                         |
+| `textColor`  | `string`                      | —       | Explicit text color. Sets `--zero-text-color` for descendant components.                             |
+| `style`      | `React.CSSProperties`         | —       | Inline styles forwarded to the `<div>`.                                                              |
+| *(rest)*     | `...React.ComponentProps<'div'>` | —    | All other native `<div>` props (e.g. `id`, `onClick`, `className`, etc.) are forwarded.               |
 
 ---
 
-> **Tip:** Combine `preset` with the theme’s spacing utilities to create consistent, reusable layout containers without additional CSS.
+## Theming CSS Variables
+
+When you use `background` or `textColor`, `Box` emits CSS variables:
+
+- `--zero-bg` → value of `background`
+- `--zero-text-color` → value of `textColor`
+
+These can be consumed by nested components (e.g. `Typography`) to inherit context-aware colors.
+
+---
+
+## Accessibility & Best Practices
+
+- Label containers with accessible attributes as needed (e.g. `aria-label`, `role`) when using as interactive wrapper.
+- Prefer `preset` for consistent theming instead of ad-hoc inline styles.
+- Combine with `Stack` or `Surface` for layout and spacing helpers.
+
+---
+
+> **Tip:** Use `Box` to scope context-aware styling. It works seamlessly with the ZeroUI theming engine.

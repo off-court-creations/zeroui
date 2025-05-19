@@ -1,156 +1,155 @@
-import React from 'react';
-import { styled } from '../css/createStyled';
-import { useTheme } from '../system/themeStore';
-import type { Theme } from '../system/themeStore';
-import { preset } from '../css/stylePresets';
-import type { Presettable } from '../types';
+# `<Button />`
 
-export type ButtonVariant = 'main' | 'alt';
-export type ButtonSize    = 'sm'   | 'md'  | 'lg';
+ZeroUI’s **primary actionable element**. A flexible `<button>` wrapper that:
 
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    Presettable {
-  variant?: ButtonVariant;
-  size?: ButtonSize;
-  fullWidth?: boolean;
-}
+- Offers two visual styles via `variant`: **`"contained"`** (solid) and **`"outlined"`** (transparent with border).
+- Comes in three **sizes** (`"sm"`, `"md"`, `"lg"`) that scale padding, height, and font-size.
+- Can **stretch to the full container width** with `fullWidth`.
+- Integrates with ZeroUI’s **style preset** system through the `preset` prop.
+- Implements an **ink‑ripple press effect** and gentle scale on tap / click.
+- Prevents text selection on mobile for a native‑app feel (`user‑select: none`).
+- Accepts **all native `<button>` props** (e.g. `onClick`, `type`, `disabled`, `style`, etc.).
 
-/* size map -------------------------------------------------------------- */
-const sizeMap = (t: Theme) => ({
-  sm: { padV: t.spacing.sm, padH: t.spacing.md, font: '0.75rem',  height: '2rem'  },
-  md: { padV: t.spacing.sm, padH: t.spacing.lg, font: '0.875rem', height: '2.5rem'},
-  lg: { padV: t.spacing.md, padH: t.spacing.lg, font: '1rem',     height: '3rem'  },
-} as const);
+Use `Button` for any discrete action before reaching for more specialised controls like `IconButton` or `ToggleButton`.
 
-/* styled base ----------------------------------------------------------- */
-const Base = styled('button')<{
-  $variant: ButtonVariant;
-  $height: string;
-  $pad   : string;
-  $font  : string;
-  $minW  : string;
-  $primary: string;
-  $primaryText: string;
-  $text  : string;
-  $ripple: string;
-  $full? : boolean;
-}>`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+---
 
-  position: relative;
-  overflow: hidden;
+## Usage
 
-  height    : ${({ $height }) => $height};
-  min-width : ${({ $minW  }) => $minW };
-  padding   : ${({ $pad   }) => $pad };
-  box-sizing: border-box;
+### Default (contained, md)
 
-  align-self: ${({ $full }) => ($full ? 'stretch' : 'flex-start')};
-  width     : ${({ $full }) => ($full ? '100%'   : 'auto')};
+```tsx
+import Button from "./Button";
+import Typography from "./Typography";
+import Surface from "./Surface";
+import { useTheme } from "../system/themeStore";
 
-  border-radius: 4px;
-  border: ${({ $variant }) =>
-    $variant === 'alt'
-      ? '1px solid var(--zero-text-color, currentColor)'
-      : 'none'};
+const { theme } = useTheme();
 
-  background: ${({ $variant, $primary }) =>
-    $variant === 'main' ? $primary : 'transparent'};
+<Surface fullscreen={false} style={{padding: theme.spacing.md}}>
+  <Button>
+    <Typography>
+      Save changes
+    </Typography>
+  </Button>
+</Surface>
+```
 
-  color: ${({ $text }) => $text};
-  --zero-text-color: ${({ $text }) => $text};
+### Outlined alternative
 
-  font-size: ${({ $font }) => $font};
-  font-weight: 600;
-  cursor: pointer;
+```tsx
+import Button from "./Button";
+import Typography from "./Typography";
+import Surface from "./Surface";
+import { useTheme } from "../system/themeStore";
 
-  transition:
-    background 0.2s ease,
-    color      0.2s ease,
-    filter     0.2s ease,
-    transform  0.1s ease;
+const { theme } = useTheme();
 
-  user-select: none;
+<Surface fullscreen={false} style={{padding: theme.spacing.md}}>
+  <Button variant="outlined">
+    <Typography>
+      Cancel
+    </Typography>
+  </Button>
+</Surface>
 
-  &:hover:not(:disabled) {
-    ${({ $variant, $primary, $primaryText }) =>
-      $variant === 'main'
-        ? 'filter: brightness(1.25);'
-        : `
-          background: var(--zero-text-color, ${$primary});
-          color: ${$primaryText};
-        `}
-  }
+```
 
-  &:active:not(:disabled) { transform: scale(0.96); }
-  &:disabled             { opacity: 0.5; cursor: default; }
+### Small + disabled inside a `Stack`
 
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: ${({ $ripple }) => $ripple};
-    border-radius: inherit;
-    opacity: 0;
-    transform: scale(0.95);
-    pointer-events: none;
-    transition: transform 0.3s ease, opacity 0.3s ease;
-  }
-  &:active::after { opacity: 1; transform: scale(1); }
-`;
+```tsx
+import Button from "./Button";
+import Typography from "./Typography";
+import Stack from "./Stack";
+import Surface from "./Surface";
+import { useTheme } from "../system/themeStore";
 
-/* component ------------------------------------------------------------- */
-export const Button: React.FC<ButtonProps> = ({
-  variant = 'main',
-  size    = 'md',
-  fullWidth = false,
-  preset: p,
-  className,
-  children,
-  ...rest
-}) => {
-  const { theme } = useTheme();
-  const { padV, padH, font, height } = sizeMap(theme)[size];
+const { theme } = useTheme();
 
-  const pad   = variant === 'alt'
-    ? `calc(${padV} - 1px) calc(${padH} - 1px)`
-    : `${padV} ${padH}`;
+<Surface fullscreen={false} style={{padding: theme.spacing.md}}>
+  <Stack spacing="sm">
+    <Button size="sm" disabled>
+      <Typography>
+        Processing…
+      </Typography>
+    </Button>
+    <Button size="sm">
+      <Typography>
+        Retry
+      </Typography>
+    </Button>
+  </Stack>
+</Surface>
+```
 
-  const minW  = `calc(${height} * 2)`;
-  const ripple =
-    variant === 'main'
-      ? 'rgba(255,255,255,0.25)'
-      : 'rgba(0,0,0,0.1)';
+### Full‑width primary action in a dialog footer
 
-  const textColour =
-    variant === 'main'
-      ? theme.colors.primaryText
-      : `var(--zero-text-color, ${theme.colors.text})`;
+```tsx
+import Button from "./Button";
+import Surface from "./Surface";
+import Typography from "./Typography";
+import { useTheme } from "../system/themeStore";
 
-  const presetClasses = p ? preset(p) : '';
+const { theme } = useTheme();
 
-  return (
-    <Base
-      type="button"
-      {...rest}
-      $variant={variant}
-      $height={height}
-      $pad={pad}
-      $font={font}
-      $minW={minW}
-      $primary={theme.colors.primary}
-      $primaryText={theme.colors.primaryText}
-      $text={textColour}
-      $ripple={ripple}
-      $full={fullWidth}
-      className={[presetClasses, className].filter(Boolean).join(' ')}
-    >
-      {children}
-    </Base>
-  );
-};
+<Surface fullscreen={false} style={{ padding: theme.spacing.md }}>
+  <Button>
+    <Typography>
+      Continue
+    </Typography>
+  </Button>
+</Surface>
+```
 
-export default Button;
+### Themed background showcase
+
+```tsx
+import Surface from "./Surface";
+import Button from "./Button";
+import Typography from "./Typography";
+import { useTheme } from "../system/themeStore";
+
+const { theme } = useTheme();
+
+<Surface fullscreen={false} style={{ backgroundColor: theme.colors.primary, padding: theme.spacing.md }}>
+  <Button variant="outlined">
+    <Typography>
+      Outlined on primary background
+    </Typography>
+  </Button>
+</Surface>
+```
+
+---
+
+## Props
+
+| Name        | Type                                     | Default   | Description                                                                                              |
+|-------------|------------------------------------------|-----------|----------------------------------------------------------------------------------------------------------|
+| `variant`   | `"contained"` - `"outlined"`           | `contained` | Visual style of the button. `"contained"` renders a solid fill; `"outlined"` renders a transparent background with a 1 px border. |
+| `size`      | `"sm"` - `"md"` - `"lg"`            | `md`      | Overall control dimensions (padding, height, font‑size). |
+| `fullWidth` | `boolean`                                | `false`   | When `true`, the button stretches to `width: 100%` and aligns itself inside flex layouts. |
+| `preset`    | `string` or `string[]` (optional)        | —         | One or more preset names (defined via `definePreset()`), applied as CSS classes for custom theming. |
+| `style`     | `React.CSSProperties`                    | —         | Inline styles forwarded to the underlying `<button>`. |
+| *(rest)*    | `...React.ButtonHTMLAttributes<HTMLButtonElement>` | — | Any other native `<button>` props (e.g. `id`, `onPointerDown`, `form`) are forwarded. |
+
+---
+
+## Colour Logic & Ripple
+
+- **Contained buttons** use `theme.colors.primary` as the background and `theme.colors.text` for text. On hover the background brightens by 25 % and the ripple colour is translucent white.
+- **Outlined buttons** draw a 1 px border in the current text colour and adopt `theme.colors.primary` + `theme.colors.primaryText` on hover. The ripple colour is a subtle translucent black.
+- The component emits `--zero-text-color` for descendant elements, enabling nested icons or text to inherit the proper colour automatically.
+
+---
+
+## Accessibility & Best Practices
+
+- Always supply an explicit `type` (`"button"`, `"submit"`, or `"reset"`) to avoid accidental form submission.
+- Use the `disabled` prop to indicate a non‑interactive state; it automatically removes hover / active styles and the ripple effect.
+- When the button performs a **destructive action**, consider adding `aria-label` text like `"Delete account"` if the visible label is ambiguous.
+- Combine with `Stack` for consistent spacing between groups of buttons.
+
+---
+
+> **Tip:** For icon‑only actions, create an `IconButton` wrapper using the same variant / size system for visual consistency.

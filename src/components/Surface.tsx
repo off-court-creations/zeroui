@@ -1,3 +1,7 @@
+// ─────────────────────────────────────────────────────────────
+// src/components/Surface.tsx
+// ZeroUI <Surface /> – optional non-fullscreen mode for docs / partial layouts
+// ─────────────────────────────────────────────────────────────
 import React, {
   createContext,
   useContext,
@@ -10,6 +14,7 @@ import { preset } from '../css/stylePresets';
 import type { Presettable } from '../types';
 
 /*───────────────────────────────────────────────────────────*/
+/** Context value returned by `useSurface()` */
 export interface SurfaceContext {
   width: number;
   height: number;
@@ -20,9 +25,13 @@ export interface SurfaceContext {
 const SurfaceCtx = createContext<SurfaceContext | null>(null);
 
 /*───────────────────────────────────────────────────────────*/
+/** Public prop type for Surface */
 export interface SurfaceProps
   extends React.HTMLAttributes<HTMLDivElement>,
-    Presettable {}
+    Presettable {
+  /** Fill the entire viewport when `true` (default). */
+  fullscreen?: boolean;
+}
 
 /*───────────────────────────────────────────────────────────*/
 export const Surface: React.FC<SurfaceProps> = ({
@@ -30,6 +39,7 @@ export const Surface: React.FC<SurfaceProps> = ({
   style,
   preset: p,
   className,
+  fullscreen = true,          // ← new prop with default “on”
   ...props
 }) => {
   const ref           = useRef<HTMLDivElement>(null);
@@ -78,19 +88,30 @@ export const Surface: React.FC<SurfaceProps> = ({
     '--zero-text-color': defaults.color,
   } as any;
 
+  /* ----- layout styles -------------------------------------------------- */
+  const layoutStyles: React.CSSProperties = fullscreen
+    ? {
+        position: 'fixed',
+        inset: 0,
+        paddingTop   : 'env(safe-area-inset-top)',
+        paddingRight : 'env(safe-area-inset-right)',
+        paddingBottom: 'env(safe-area-inset-bottom)',
+        paddingLeft  : 'env(safe-area-inset-left)',
+        overflow: 'auto',
+      }
+    : {
+        width: '100%',
+        height: 'auto',
+        position: 'relative',
+      };
+
   return (
     <SurfaceCtx.Provider value={state}>
       <div
         ref={ref}
         className={[presetClasses, className].filter(Boolean).join(' ')}
         style={{
-          position: 'fixed',
-          inset: 0,
-          paddingTop   : 'env(safe-area-inset-top)',
-          paddingRight : 'env(safe-area-inset-right)',
-          paddingBottom: 'env(safe-area-inset-bottom)',
-          paddingLeft  : 'env(safe-area-inset-left)',
-          overflow: 'auto',
+          ...layoutStyles,
           ...defaults,
           ...cssVars,
           ...style,
