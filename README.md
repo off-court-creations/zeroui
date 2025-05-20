@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-ZeroUI is an alternative to Material UI and Emotion. It is a WIP
+ZeroUI is an alternative to Material UI and Emotion. It is a WIP.
 
 Please expect many breaking changes but feel free to check it out!
 
@@ -13,8 +13,6 @@ npm run styleguide
 ```
 
 ## Components
-
-Current components include:
 
 - Box
 - Button
@@ -29,7 +27,7 @@ Current components include:
 - Textfield
 - Typography
 
-Intended Components include:
+## Roadmap Components
 
 - Checkbox
 - Select
