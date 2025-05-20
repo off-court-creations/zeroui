@@ -19,6 +19,8 @@ Current components include:
 - Box
 - Button
 - FormControl
+- Icon
+- IconButton
 - Panel
 - Parallax
 - Radio Group
