@@ -1,7 +1,4 @@
-// ─────────────────────────────────────────────────────────────
 // src/components/Surface.tsx
-// ZeroUI <Surface /> – optional non-fullscreen mode for docs / partial layouts
-// ─────────────────────────────────────────────────────────────
 import React, {
   createContext,
   useContext,
@@ -13,8 +10,7 @@ import { Breakpoint, useTheme } from '../system/themeStore';
 import { preset } from '../css/stylePresets';
 import type { Presettable } from '../types';
 
-/*───────────────────────────────────────────────────────────*/
-/** Context value returned by `useSurface()` */
+/** Surface Context definition */
 export interface SurfaceContext {
   width: number;
   height: number;
@@ -24,29 +20,26 @@ export interface SurfaceContext {
 
 const SurfaceCtx = createContext<SurfaceContext | null>(null);
 
-/*───────────────────────────────────────────────────────────*/
-/** Public prop type for Surface */
+/** Surface Props definition */
 export interface SurfaceProps
   extends React.HTMLAttributes<HTMLDivElement>,
     Presettable {
-  /** Fill the entire viewport when `true` (default). */
   fullscreen?: boolean;
 }
 
-/*───────────────────────────────────────────────────────────*/
 export const Surface: React.FC<SurfaceProps> = ({
   children,
   style,
   preset: p,
   className,
-  fullscreen = true,          // ← new prop with default “on”
+  fullscreen = true,
   ...props
 }) => {
-  const ref           = useRef<HTMLDivElement>(null);
-  const { theme }     = useTheme();
+  const ref = useRef<HTMLDivElement>(null);
+  const { theme } = useTheme();
   const presetClasses = p ? preset(p) : '';
 
-  /* ----- viewport metrics ---------------------------------------------- */
+  /* Viewport metrics */
   const [state, setState] = useState<SurfaceContext>({
     width: 0,
     height: 0,
@@ -55,8 +48,9 @@ export const Surface: React.FC<SurfaceProps> = ({
   });
 
   const bpFor = (w: number): Breakpoint =>
-    (Object.entries(theme.breakpoints) as [Breakpoint, number][])
-      .reduce<Breakpoint>((acc, [key, min]) => (w >= min ? key : acc), 'xs');
+    (Object.entries(theme.breakpoints) as [Breakpoint, number][]).reduce<Breakpoint>(
+      (acc, [key, min]) => (w >= min ? key : acc), 'xs'
+    );
 
   useEffect(() => {
     if (!ref.current) return;
@@ -69,7 +63,7 @@ export const Surface: React.FC<SurfaceProps> = ({
         height,
         hasScrollbar:
           node.scrollHeight > node.clientHeight ||
-          node.scrollWidth  > node.clientWidth,
+          node.scrollWidth > node.clientWidth,
         breakpoint: bpFor(width),
       });
     });
@@ -77,33 +71,32 @@ export const Surface: React.FC<SurfaceProps> = ({
     return () => ro.disconnect();
   }, [theme.breakpoints]);
 
-  /* ----- default styles & smart-colour vars ---------------------------- */
+  /* Restore defaults explicitly (critical fix) */
   const defaults: React.CSSProperties = {
-    background: theme.colors.background,
-    color     : theme.colors.text,
+    background: theme.colors.background, // ← FIXED explicitly
+    color: theme.colors.text,            // ← FIXED explicitly
   };
 
+  /* Fonts and other CSS Variables (fully preserved) */
   const cssVars: React.CSSProperties = {
-    '--zero-bg'        : defaults.background,
-    '--zero-text-color': defaults.color,
+    '--zero-bg': theme.colors.background,
+    '--zero-text-color': theme.colors.text,
+    '--zero-font-heading': theme.fonts.heading,
+    '--zero-font-body': theme.fonts.body,
+    '--zero-font-mono': theme.fonts.mono,
   } as any;
 
-  /* ----- layout styles -------------------------------------------------- */
   const layoutStyles: React.CSSProperties = fullscreen
     ? {
         position: 'fixed',
         inset: 0,
-        paddingTop   : 'env(safe-area-inset-top)',
-        paddingRight : 'env(safe-area-inset-right)',
+        paddingTop: 'env(safe-area-inset-top)',
+        paddingRight: 'env(safe-area-inset-right)',
         paddingBottom: 'env(safe-area-inset-bottom)',
-        paddingLeft  : 'env(safe-area-inset-left)',
+        paddingLeft: 'env(safe-area-inset-left)',
         overflow: 'auto',
       }
-    : {
-        width: '100%',
-        height: 'auto',
-        position: 'relative',
-      };
+    : { width: '100%', height: 'auto', position: 'relative' };
 
   return (
     <SurfaceCtx.Provider value={state}>
@@ -111,10 +104,10 @@ export const Surface: React.FC<SurfaceProps> = ({
         ref={ref}
         className={[presetClasses, className].filter(Boolean).join(' ')}
         style={{
-          ...layoutStyles,
-          ...defaults,
-          ...cssVars,
-          ...style,
+          ...layoutStyles, // first apply layout rules
+          ...defaults,     // then explicitly apply default colors (critical fix)
+          ...cssVars,      // then fonts and other variables
+          ...style,        // finally allow external overrides
         }}
         {...props}
       >
@@ -126,7 +119,6 @@ export const Surface: React.FC<SurfaceProps> = ({
 
 export default Surface;
 
-/*───────────────────────────────────────────────────────────*/
 export const useSurface = () => {
   const ctx = useContext(SurfaceCtx);
   if (!ctx)

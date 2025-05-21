@@ -1,6 +1,5 @@
-// ─────────────────────────────────────────────────────────────
 // src/components/Typography.tsx
-// ─────────────────────────────────────────────────────────────
+
 import React from 'react';
 import { styled } from '../css/createStyled';
 import { useTheme } from '../system/themeStore';
@@ -21,16 +20,16 @@ export interface TypographyProps
   fontSize?: string;
   scale?: number;
   autoSize?: boolean;
-  /** Explicit colour override */
   color?: string;
+  fontFamily?: string;
 }
 
 const mapping: Record<Variant, keyof JSX.IntrinsicElements> = {
-  h1:'h1', h2:'h2', h3:'h3', h4:'h4', h5:'h5', h6:'h6',
-  body:'p', subtitle:'span',
+  h1: 'h1', h2: 'h2', h3: 'h3',
+  h4: 'h4', h5: 'h5', h6: 'h6',
+  body: 'p', subtitle: 'span',
 };
 
-/*───────────────────────────────────────────────────────────*/
 export const Typography: React.FC<TypographyProps> = ({
   variant = 'body',
   bold = false,
@@ -38,7 +37,8 @@ export const Typography: React.FC<TypographyProps> = ({
   fontSize,
   scale,
   autoSize = false,
-  color,                 // ← explicit override
+  color,
+  fontFamily,
   preset: p,
   className,
   children,
@@ -48,36 +48,40 @@ export const Typography: React.FC<TypographyProps> = ({
   const { theme } = useTheme();
   const { breakpoint } = useSurface();
 
-  /* ----- size ----------------------------------------------------------- */
   const defaultSize = theme.typography[variant].md;
   let size = autoSize ? theme.typography[variant][breakpoint] : defaultSize;
   if (scale != null) size = `calc(${defaultSize} * ${scale})`;
   if (fontSize) size = fontSize;
 
-  /* ----- colour rule (conditional) ------------------------------------- */
-  // 1. explicit colour prop → always emit
-  // 2. rely on CSS variable if present
-  // 3. otherwise emit *nothing* so the preset / parent colour wins
-  const needsRule = color != null;
-  const colourCSS = needsRule
-    ? color
-    : 'var(--zero-text-color)';   // will be ignored if the var is unset
-
-  const Component = styled(Tag as any)<{ $needs?: boolean }>`
-    margin: 0;
-    ${props => props.$needs && `color: ${colourCSS};`}
-    font-size: ${size};
-    font-weight: ${bold ? 700 : 400};
-    font-style: ${italic ? 'italic' : 'normal'};
-    line-height: 1.4;
-  `;
-
   const presetClasses = p ? preset(p) : '';
+
+  const Component = React.useMemo(() => styled(Tag)<{
+    $variant: Variant;
+    $color?: string;
+    $fontFamily?: string;
+    $size: string;
+    $bold: boolean;
+    $italic: boolean;
+  }>`
+    margin: 0;
+    color: ${({ $color }) => $color || 'var(--zero-text-color)'};
+    font-size: ${({ $size }) => $size};
+    font-weight: ${({ $bold }) => ($bold ? 700 : 400)};
+    font-style: ${({ $italic }) => ($italic ? 'italic' : 'normal')};
+    line-height: 1.4;
+    font-family: ${({ $fontFamily, $variant }) =>
+      $fontFamily || `var(--zero-font-${$variant.startsWith('h') ? 'heading' : 'body'})`};
+  `, [Tag]);
 
   return (
     <Component
       {...props}
-      $needs={needsRule}
+      $color={color}
+      $fontFamily={fontFamily}
+      $variant={variant}
+      $size={size}
+      $bold={bold}
+      $italic={italic}
       className={[presetClasses, className].filter(Boolean).join(' ')}
     >
       {children}
