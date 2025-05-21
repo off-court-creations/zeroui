@@ -45,7 +45,7 @@ const common: Omit<Theme, 'colors'> = {
     subtitle: { xs: '0.75rem', sm: '0.875rem', md: '0.875rem', lg: '1rem', xl: '1rem' },
   },
   fonts: {
-    heading: 'Oswald', body: 'Oswald', mono: 'Oswald',
+    heading: 'Roboto', body: 'Roboto Serif', mono: 'Roboto Mono',
   },
 };
 

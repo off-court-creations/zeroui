@@ -27,6 +27,15 @@ npm run styleguide
 - Textfield
 - Typography
 
+## Hooks
+
+ - useGoogleFonts
+ - useTheme
+
+## Utilities
+
+ - createFormStore
+
 ## Roadmap Components
 
 - Checkbox
@@ -49,3 +58,4 @@ npm run styleguide
 - Stepper
 - Speed Dial
 - Grid
+- The ability to center your divs (lol)
